@@ -20,7 +20,7 @@ class MemTracker(object):
         self.frame = frame
         self.print_detail = detail
         self.last_tensor_sizes = set()
-        self.gpu_profile_fn = path + f'{datetime.datetime.now():%d-%b-%y-%H:%M:%S}-gpu_mem_track.txt'
+        self.gpu_profile_fn = path + datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S") + '-gpu_mem_track.txt'
         self.verbose = verbose
         self.begin = True
         self.device = device
@@ -59,8 +59,8 @@ class MemTracker(object):
         with open(self.gpu_profile_fn, 'a+') as f:
 
             if self.begin:
-                f.write(f"GPU Memory Track | {datetime.datetime.now():%d-%b-%y-%H:%M:%S} |"
-                        f" Total Used Memory:{meminfo.used/1000**2:<7.1f}Mb\n\n")
+                f.write("GPU Memory Track | {} | ".format(datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")) +
+                        "Total Used Memory:{:<7.1f}Mb\n\n".format(meminfo.used/1000**2))
                 self.begin = False
 
             if self.print_detail is True:
@@ -68,13 +68,13 @@ class MemTracker(object):
                 new_tensor_sizes = {(type(x), tuple(x.size()), ts_list.count(x.size()), np.prod(np.array(x.size()))*4/1000**2)
                                     for x in self.get_tensors()}
                 for t, s, n, m in new_tensor_sizes - self.last_tensor_sizes:
-                    f.write(f'+ | {str(n)} * Size:{str(s):<20} | Memory: {str(m*n)[:6]} M | {str(t):<20}\n')
+                    f.write('+ | {} * Size:{:<20} | Memory: {} M | {:<20}\n'.format(str(n), str(s), str(m*n)[:6], str(t)))
                 for t, s, n, m in self.last_tensor_sizes - new_tensor_sizes:
-                    f.write(f'- | {str(n)} * Size:{str(s):<20} | Memory: {str(m*n)[:6]} M | {str(t):<20} \n')
+                    f.write('- | {} * Size:{:<20} | Memory: {} M | {:<20} \n'.format(str(n), str(s), str(m*n)[:6], str(t)))
                 self.last_tensor_sizes = new_tensor_sizes
 
-            f.write(f"\nAt {where_str:<50}"
-                    f"Total Used Memory:{meminfo.used/1000**2:<7.1f}Mb\n\n")
+            f.write("\nAt {:<50}".format(where_str) +
+                    " Total Used Memory:{:<7.1f}Mb\n\n".format(meminfo.used/1000**2))
 
         pynvml.nvmlShutdown()
 
