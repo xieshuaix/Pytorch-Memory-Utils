@@ -1,6 +1,7 @@
 import gc
 import datetime
 import pynvml
+import os
 
 import torch
 import numpy as np
@@ -22,7 +23,8 @@ class MemTracker(object):
         self.frame = frame
         self.print_detail = detail
         self.last_summary = set()
-        self.gpu_profile_fn = path + datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S") + '-gpu_mem_track.txt'
+        self.file_name = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S") + '-gpu_mem_track.txt'
+        self.gpu_profile_fn = os.path.join(path, self.file_name)
         self.verbose = verbose
         self.begin = True
         self.device = device
